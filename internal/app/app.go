@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"regexp"
@@ -14,12 +13,14 @@ import (
 type App struct {
 	log    *slog.Logger
 	parser *observer.Observer
+	re     *regexp.Regexp
 }
 
 func NewApp(log *slog.Logger, parser *observer.Observer) *App {
 	return &App{
 		log:    log,
 		parser: parser,
+		re:     regexp.MustCompile("^0x[0-9a-fA-F]{40}$"),
 	}
 }
 
@@ -31,7 +32,14 @@ type GetTransactionsResponse struct {
 	Transactions []client.Transaction `json:"transactions"`
 }
 
+type AddSubscriberResponse struct {
+	Status string `json:"status"`
+}
+
+// GetLastBlock returns the last block number
 func (app *App) GetLastBlock(w http.ResponseWriter, r *http.Request) {
+	app.log.Info("App::GetLastBlock")
+
 	lastBlock := app.parser.GetCurrentBlock()
 
 	resp := GetLastBlockResponse{
@@ -42,10 +50,13 @@ func (app *App) GetLastBlock(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// GetTransactions returns transactions for the given address
 func (app *App) GetTransactions(w http.ResponseWriter, r *http.Request) {
-	address := r.URL.Query().Get("address")
+	app.log.Info("App::GetTransactions")
 
-	if !IsValidAddress(address) {
+	address := r.PathValue("address")
+
+	if !app.isValidAddress(address) {
 		http.Error(w, `{"error":"invalid address"}`, http.StatusBadRequest)
 		return
 	}
@@ -65,46 +76,35 @@ func (app *App) GetTransactions(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// AddSubscriber adds address to the list of addresses to watch
 func (app *App) AddSubscriber(w http.ResponseWriter, r *http.Request) {
-	address := r.URL.Query().Get("address")
+	app.log.Info("App::AddSubscriber")
 
-	if !IsValidAddress(address) {
+	address := r.PathValue("address")
+
+	if !app.isValidAddress(address) {
 		http.Error(w, `{"error":"invalid address"}`, http.StatusBadRequest)
 		return
 	}
 
 	app.parser.Subscribe(address)
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"status": "ok"}`)
+	json.NewEncoder(w).Encode(AddSubscriberResponse{Status: "ok"})
+
 }
 
 func (app *App) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
-	apiHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		switch r.Method {
-		case http.MethodGet:
-			switch r.URL.Path {
-			case "/api/v1/last_block":
-				app.GetLastBlock(w, r)
-			case "/api/v1/transactions":
-				app.GetTransactions(w, r)
-			}
-		case http.MethodPost:
-			app.AddSubscriber(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.Handle("/api/v1/", apiHandler)
+	mux.HandleFunc("GET /api/v1/last_block", app.GetLastBlock)
+	mux.HandleFunc("GET /api/v1/transactions/{address}", app.GetTransactions)
+	mux.HandleFunc("POST /api/v1/subscribe/{address}", app.AddSubscriber)
 
 	return mux
 
 }
 
-func IsValidAddress(v string) bool {
-	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
-	return re.MatchString(v)
+// IsValidAddress checks if the given string is a valid ethereum address
+func (app *App) isValidAddress(v string) bool {
+	return app.re.MatchString(v)
 }

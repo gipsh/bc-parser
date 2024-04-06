@@ -36,6 +36,9 @@ func main() {
 	// observer
 	parser := observer.NewObserver(log, &wg, done, output, storage)
 
+	parser.Subscribe("0x1c9fce6dd765a22040d500019ada91acce65b5d2")
+	parser.Subscribe("0x6907894f656b95d67e380349a5edc1f75bc45b8c")
+
 	// start indexer and parser
 	go indexer.Start()
 	go parser.Start()
@@ -55,11 +58,12 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal, 1)
+	quit := make(chan os.Signal, 2)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	log.Info("Shutdown Server ...")
 
+	// stop indexer and parser
 	done <- true
 	done <- true
 	log.Info("Waiting for indexer and parser to stop")

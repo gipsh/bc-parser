@@ -29,7 +29,7 @@ The service creates a REST API to interact with the provided parser interface
 
 ### Get current block 
 
-Returns the last block in decimal the indexer processed 
+Returns the last block (in decimal) the indexer processed 
 
 ```bash
 curl http://localhost:8081/api/v1/last_block
@@ -49,7 +49,7 @@ If is the address is invalid for eth an error is returned.
 
 
 ```bash
-curl -X POST http://localhost:8081/api/v1/subscribe\?address\=0x1c9fce6dd765a22040d500019ada91acce65b5d2
+curl -X POST http://localhost:8081/api/v1/subscribe/0x1c9fce6dd765a22040d500019ada91acce65b5d2
 ```
 
 response:
@@ -74,7 +74,7 @@ Returns error if the provided address is invalid.
 
 
 ```bash
-curl http://localhost:8081/api/v1/transactions\?address\=0x1c9fce6dd765a22040d500019ada91acce65b5d2
+curl http://localhost:8081/api/v1/transactions/0x1c9fce6dd765a22040d500019ada91acce65b5d2
 ```
 
 response:
