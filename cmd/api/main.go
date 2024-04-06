@@ -30,14 +30,12 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
+
 	// indexer
 	indexer := indexer.NewIndexer(log, cli, &wg, done, output, 19590119)
 
 	// observer
 	parser := observer.NewObserver(log, &wg, done, output, storage)
-
-	parser.Subscribe("0x1c9fce6dd765a22040d500019ada91acce65b5d2")
-	parser.Subscribe("0x6907894f656b95d67e380349a5edc1f75bc45b8c")
 
 	// start indexer and parser
 	go indexer.Start()
@@ -58,8 +56,9 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal, 2)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
+	// block until quit signal
 	<-quit
 	log.Info("Shutdown Server ...")
 
