@@ -141,9 +141,10 @@ or
 
 
 
-## Improvements
+## Future improvements and ideas
 - read config from env (inital block, rpc endpoint, etc)
 - add more tests
+- improve error handling / implement retries on the indexer when rpc calls fail
 - json rpc client could be improved (didnt want to wast time there)
 - the indexer could be modified to process more than one block at the same time
  
