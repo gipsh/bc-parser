@@ -2,7 +2,7 @@
 
 Eth indexer and parser challenge 
 
-## build 
+## Build 
 
 Make sure you have go1.22 installed. 
 
@@ -13,7 +13,7 @@ And just run
 make build
 ```
 
-## run 
+## Run 
 
 Run this 
 
@@ -143,12 +143,14 @@ or
 
 ## Improvements
 - read config from env (inital block, rpc endpoint, etc)
-- add more test
+- add more tests
 - json rpc client could be improved (didnt want to wast time there)
+- the indexer could be modified to process more than one block at the same time
+ 
 
 ## Packages 
 
-### client 
+### Client 
 Is the implementation of JSONRPC methods used for the indexer
 
 ### Indexer 
@@ -164,7 +166,7 @@ Is the in-memory storage, its modeled so i can also use it to hold the subscript
 Is the code that implements the proposed interface (Parser) for the challenge 
 
 ### App 
-contains the handlers for the rest api
+Contains the handlers for the rest api
 
 
 

@@ -40,9 +40,6 @@ func main() {
 	go indexer.Start()
 	go parser.Start()
 
-	parser.Subscribe("0x6907894f656b95D67e380349A5eDC1f75Bc45b8C")
-	parser.Subscribe("0x1c9FCE6dD765a22040D500019AdA91acCE65b5d2")
-
 	// app
 	app := app.NewApp(log, parser)
 
@@ -58,7 +55,7 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal, 2)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	log.Info("Shutdown Server ...")
