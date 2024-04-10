@@ -21,13 +21,14 @@ type Storer interface {
 
 type Storage struct {
 	transactions map[string][]client.Transaction
-	mutex        sync.Mutex
+	mutex        sync.RWMutex
 }
 
 // NewStorage creates new storage
 func NewStorage() *Storage {
 	return &Storage{
 		transactions: make(map[string][]client.Transaction),
+		mutex:        sync.RWMutex{},
 	}
 }
 
@@ -40,15 +41,15 @@ func (s *Storage) Store(address string, tx client.Transaction) {
 
 // GetTx returns transactions for address
 func (s *Storage) GetTx(address string) []client.Transaction {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.mutex.RLock()
+	defer s.mutex.RLock()
 	return s.transactions[address]
 }
 
 // HasAddress checks if address is in storage
 func (s *Storage) HasAddress(address string) bool {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	_, ok := s.transactions[address]
 	return ok
 }
